@@ -1284,6 +1284,8 @@
 	"Upload files": "",
         "Upload Files": "Upload Files",
         "Large Audio File": "Large Audio File",
+        "Large Audio Files": "Large Audio Files",
+        "Azure Storage": "Azure Storage",
         "Azure Blob Endpoint": "Azure Blob Endpoint",
         "Azure Blob Container": "Azure Blob Container",
         "Azure Blob Key": "Azure Blob Key",

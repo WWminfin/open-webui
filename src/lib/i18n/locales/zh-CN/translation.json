@@ -1284,6 +1284,8 @@
 	"Upload files": "上传文件",
         "Upload Files": "上传文件",
         "Large Audio File": "上传大型音频文件",
+        "Large Audio Files": "大型音频文件",
+        "Azure Storage": "Azure 存储",
         "Azure Blob Endpoint": "Azure Blob 终结点",
         "Azure Blob Container": "Azure Blob 容器",
         "Azure Blob Key": "Azure Blob 密钥",
