@@ -10,7 +10,8 @@
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
-	import DocumentArrowUpSolid from '$lib/components/icons/DocumentArrowUpSolid.svelte';
+import DocumentArrowUpSolid from '$lib/components/icons/DocumentArrowUpSolid.svelte';
+import CloudArrowUp from '$lib/components/icons/CloudArrowUp.svelte';
 	import Switch from '$lib/components/common/Switch.svelte';
 	import GlobeAltSolid from '$lib/components/icons/GlobeAltSolid.svelte';
 	import WrenchSolid from '$lib/components/icons/WrenchSolid.svelte';
@@ -25,9 +26,10 @@
 	export let selectedModels: string[] = [];
 	export let fileUploadCapableModels: string[] = [];
 
-	export let screenCaptureHandler: Function;
-	export let uploadFilesHandler: Function;
-	export let inputFilesHandler: Function;
+export let screenCaptureHandler: Function;
+export let uploadFilesHandler: Function;
+export let inputFilesHandler: Function;
+export let uploadLargeAudioHandler: Function;
 
 	export let uploadGoogleDriveHandler: Function;
 	export let uploadOneDriveHandler: Function;
@@ -212,20 +214,39 @@
 						: ''}
 				className="w-full"
 			>
-				<DropdownMenu.Item
-					class="flex gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl {!fileUploadEnabled
-						? 'opacity-50'
-						: ''}"
-					on:click={() => {
-						if (fileUploadEnabled) {
-							uploadFilesHandler();
-						}
-					}}
-				>
-					<DocumentArrowUpSolid />
-					<div class="line-clamp-1">{$i18n.t('Upload Files')}</div>
-				</DropdownMenu.Item>
-			</Tooltip>
+                                <DropdownMenu.Item
+                                        class="flex gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl {!fileUploadEnabled
+                                                ? 'opacity-50'
+                                                : ''}"
+                                        on:click={() => {
+                                                if (fileUploadEnabled) {
+                                                        uploadFilesHandler();
+                                                }
+                                        }}
+                                >
+                                        <DocumentArrowUpSolid />
+                                        <div class="line-clamp-1">{$i18n.t('Upload Files')}</div>
+                                </DropdownMenu.Item>
+                        </Tooltip>
+
+                        <Tooltip
+                                content={!fileUploadEnabled ? $i18n.t('You do not have permission to upload files.') : ''}
+                                className="w-full"
+                        >
+                                <DropdownMenu.Item
+                                        class="flex gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl {!fileUploadEnabled
+                                                ? 'opacity-50'
+                                                : ''}"
+                                        on:click={() => {
+                                                if (fileUploadEnabled) {
+                                                        uploadLargeAudioHandler();
+                                                }
+                                        }}
+                                >
+                                        <CloudArrowUp />
+                                        <div class="line-clamp-1">{$i18n.t('Large Audio File')}</div>
+                                </DropdownMenu.Item>
+                        </Tooltip>
 
 			{#if fileUploadEnabled}
 				{#if $config?.features?.enable_google_drive_integration}

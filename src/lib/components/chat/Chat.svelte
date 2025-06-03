@@ -2100,7 +2100,7 @@
 											localStorage.removeItem(`chat-input${$chatId ? `-${$chatId}` : ''}`);
 										}
 									}}
-									on:upload={async (e) => {
+                                                                        on:upload={async (e) => {
 										const { type, data } = e.detail;
 
 										if (type === 'web') {
@@ -2110,8 +2110,26 @@
 										} else if (type === 'google-drive') {
 											await uploadGoogleDriveFile(data);
 										}
-									}}
-									on:submit={async (e) => {
+                                                                        }}
+                                                                        on:systemMessage={(e) => {
+                                                                                addMessages({
+                                                                                        modelId: selectedModelIds?.at(0),
+                                                                                        parentId: history.currentId,
+                                                                                        messages: [
+                                                                                                { role: 'system', content: e.detail }
+                                                                                        ]
+                                                                                });
+                                                                        }}
+                                                                        on:systemMessage={(e) => {
+                                                                                addMessages({
+                                                                                        modelId: selectedModelIds?.at(0),
+                                                                                        parentId: history.currentId,
+                                                                                        messages: [
+                                                                                                { role: 'system', content: e.detail }
+                                                                                        ]
+                                                                                });
+                                                                        }}
+                                                                        on:submit={async (e) => {
 										if (e.detail || files.length > 0) {
 											await tick();
 											submitPrompt(
