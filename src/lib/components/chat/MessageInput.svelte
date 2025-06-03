@@ -27,7 +27,7 @@
 		createMessagesList,
 		extractCurlyBraceWords
 	} from '$lib/utils';
-	import { uploadFile } from '$lib/apis/files';
+       import { uploadFile, uploadLargeAudio } from '$lib/apis/files';
 	import { generateAutoCompletion } from '$lib/apis';
 	import { deleteFileById } from '$lib/apis/files';
 
@@ -314,7 +314,7 @@ const uploadLargeAudioFile = async (file) => {
                 return;
         }
 
-        await uploadFileHandler(file, false, false);
+       await uploadLargeAudio(localStorage.token, file);
 
         dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
 };

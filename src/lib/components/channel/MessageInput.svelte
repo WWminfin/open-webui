@@ -13,7 +13,7 @@
 	import RichTextInput from '../common/RichTextInput.svelte';
 	import VoiceRecording from '../chat/MessageInput/VoiceRecording.svelte';
 	import InputMenu from './MessageInput/InputMenu.svelte';
-	import { uploadFile } from '$lib/apis/files';
+       import { uploadFile, uploadLargeAudio } from '$lib/apis/files';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import FileItem from '../common/FileItem.svelte';
 	import Image from '../common/Image.svelte';
@@ -221,7 +221,7 @@ const uploadFileHandler = async (file, process = true) => {
                         return;
                 }
 
-                await uploadFileHandler(file, false);
+               await uploadLargeAudio(localStorage.token, file);
 
                 dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
         };
