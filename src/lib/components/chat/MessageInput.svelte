@@ -222,38 +222,25 @@
 		}
 	};
 
-        const uploadFileHandler = async (file, fullContext: boolean = false) => {
-		if ($_user?.role !== 'admin' && !($_user?.permissions?.chat?.file_upload ?? true)) {
-			toast.error($i18n.t('You do not have permission to upload files.'));
-			return null;
-		}
+const uploadFileHandler = async (file, fullContext: boolean = false) => {
+        if ($_user?.role !== 'admin' && !($_user?.permissions?.chat?.file_upload ?? true)) {
+                toast.error($i18n.t('You do not have permission to upload files.'));
+                return null;
+        }
 
-		const tempItemId = uuidv4();
-		const fileItem = {
-			type: 'file',
-			file: '',
-			id: null,
-			url: '',
-			name: file.name,
-			collection_name: '',
-			status: 'uploading',
-			size: file.size,
-			error: '',
-			itemId: tempItemId,
-			...(fullContext ? { context: 'full' } : {})
-        };
-
-        const uploadLargeAudioFile = async (file) => {
-                if (file.size > 200 * 1024 * 1024) {
-                        toast.error(
-                                $i18n.t('File size should not exceed {{maxSize}} MB.', { maxSize: 200 })
-                        );
-                        return;
-                }
-
-                await uploadFileHandler(file);
-
-                dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
+        const tempItemId = uuidv4();
+        const fileItem = {
+                type: 'file',
+                file: '',
+                id: null,
+                url: '',
+                name: file.name,
+                collection_name: '',
+                status: 'uploading',
+                size: file.size,
+                error: '',
+                itemId: tempItemId,
+                ...(fullContext ? { context: 'full' } : {})
         };
 
 		if (fileItem.size == 0) {
@@ -303,11 +290,22 @@
 			}
 		} catch (e) {
 			toast.error(`${e}`);
-			files = files.filter((item) => item?.itemId !== tempItemId);
-		}
-	};
+        files = files.filter((item) => item?.itemId !== tempItemId);
+                }
+        };
 
-	const inputFilesHandler = async (inputFiles) => {
+const uploadLargeAudioFile = async (file) => {
+        if (file.size > 200 * 1024 * 1024) {
+                toast.error($i18n.t('File size should not exceed {{maxSize}} MB.', { maxSize: 200 }));
+                return;
+        }
+
+        await uploadFileHandler(file);
+
+        dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
+};
+
+        const inputFilesHandler = async (inputFiles) => {
 		console.log('Input files handler called with:', inputFiles);
 		inputFiles.forEach((file) => {
 			console.log('Processing file:', {
