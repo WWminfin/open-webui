@@ -136,7 +136,7 @@ let inputFiles;
 		});
 	};
 
-const uploadFileHandler = async (file) => {
+const uploadFileHandler = async (file, process = true) => {
 		const tempItemId = uuidv4();
 		const fileItem = {
 			type: 'file',
@@ -172,7 +172,12 @@ const uploadFileHandler = async (file) => {
 				};
 			}
 
-			const uploadedFile = await uploadFile(localStorage.token, file, metadata);
+                        const uploadedFile = await uploadFile(
+                                localStorage.token,
+                                file,
+                                metadata,
+                                process
+                        );
 
 			if (uploadedFile) {
 				console.info('File upload completed:', {
@@ -211,7 +216,12 @@ const uploadFileHandler = async (file) => {
                         return;
                 }
 
-                await uploadFileHandler(file);
+                if (!file.type.startsWith('audio/')) {
+                        toast.error($i18n.t('Only audio files are allowed.'));
+                        return;
+                }
+
+                await uploadFileHandler(file, false);
 
                 dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
         };

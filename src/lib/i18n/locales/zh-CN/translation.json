@@ -1289,6 +1289,7 @@
         "Azure Blob Endpoint": "Azure Blob 终结点",
         "Azure Blob Container": "Azure Blob 容器",
         "Azure Blob Key": "Azure Blob 密钥",
+        "Only audio files are allowed.": "仅允许上传音频文件。",
         "Audio file has been sent and is being processed.": "音频文件已发送，正在处理。",
         "Upload Pipeline": "上传 Pipeline",
 	"Upload Progress": "上传进度",

@@ -222,7 +222,11 @@
 		}
 	};
 
-const uploadFileHandler = async (file, fullContext: boolean = false) => {
+const uploadFileHandler = async (
+        file,
+        fullContext: boolean = false,
+        process = true
+) => {
         if ($_user?.role !== 'admin' && !($_user?.permissions?.chat?.file_upload ?? true)) {
                 toast.error($i18n.t('You do not have permission to upload files.'));
                 return null;
@@ -263,7 +267,12 @@ const uploadFileHandler = async (file, fullContext: boolean = false) => {
 			}
 
 			// During the file upload, file content is automatically extracted.
-			const uploadedFile = await uploadFile(localStorage.token, file, metadata);
+                        const uploadedFile = await uploadFile(
+                                localStorage.token,
+                                file,
+                                metadata,
+                                process
+                        );
 
 			if (uploadedFile) {
 				console.log('File upload completed:', {
@@ -300,7 +309,12 @@ const uploadLargeAudioFile = async (file) => {
                 return;
         }
 
-        await uploadFileHandler(file);
+        if (!file.type.startsWith('audio/')) {
+                toast.error($i18n.t('Only audio files are allowed.'));
+                return;
+        }
+
+        await uploadFileHandler(file, false, false);
 
         dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
 };
