@@ -17,8 +17,9 @@
 		updateRAGConfig
 	} from '$lib/apis/retrieval';
 
-	import { reindexKnowledgeFiles } from '$lib/apis/knowledge';
-	import { deleteAllFiles } from '$lib/apis/files';
+        import { reindexKnowledgeFiles } from '$lib/apis/knowledge';
+        import { deleteAllFiles } from '$lib/apis/files';
+        import { getAzureStorageConfig, setAzureStorageConfig } from '$lib/apis/configs';
 
 	import ResetUploadDirConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 	import ResetVectorDBConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
@@ -46,9 +47,13 @@
 	let OpenAIUrl = '';
 	let OpenAIKey = '';
 
-	let AzureOpenAIUrl = '';
-	let AzureOpenAIKey = '';
-	let AzureOpenAIVersion = '';
+        let AzureOpenAIUrl = '';
+        let AzureOpenAIKey = '';
+        let AzureOpenAIVersion = '';
+
+        let AzureStorageEndpoint = '';
+        let AzureStorageContainer = '';
+        let AzureStorageKey = '';
 
 	let OllamaUrl = '';
 	let OllamaKey = '';
@@ -204,8 +209,13 @@
 			.filter((code) => code !== '')
 			.join(', ');
 
-		const res = await updateRAGConfig(localStorage.token, RAGConfig);
-		dispatch('save');
+                const res = await updateRAGConfig(localStorage.token, RAGConfig);
+                await setAzureStorageConfig(localStorage.token, {
+                        AZURE_STORAGE_ENDPOINT: AzureStorageEndpoint,
+                        AZURE_STORAGE_CONTAINER_NAME: AzureStorageContainer,
+                        AZURE_STORAGE_KEY: AzureStorageKey
+                });
+                dispatch('save');
 	};
 
 	const setEmbeddingConfig = async () => {
@@ -227,13 +237,20 @@
 			AzureOpenAIVersion = embeddingConfig.azure_openai_config.version;
 		}
 	};
-	onMount(async () => {
-		await setEmbeddingConfig();
+        onMount(async () => {
+                await setEmbeddingConfig();
 
-		const config = await getRAGConfig(localStorage.token);
-		config.ALLOWED_FILE_EXTENSIONS = (config?.ALLOWED_FILE_EXTENSIONS ?? []).join(', ');
-		RAGConfig = config;
-	});
+                const config = await getRAGConfig(localStorage.token);
+                config.ALLOWED_FILE_EXTENSIONS = (config?.ALLOWED_FILE_EXTENSIONS ?? []).join(', ');
+                RAGConfig = config;
+
+                const storageConfig = await getAzureStorageConfig(localStorage.token);
+                if (storageConfig) {
+                        AzureStorageEndpoint = storageConfig.AZURE_STORAGE_ENDPOINT;
+                        AzureStorageContainer = storageConfig.AZURE_STORAGE_CONTAINER_NAME;
+                        AzureStorageKey = storageConfig.AZURE_STORAGE_KEY;
+                }
+        });
 </script>
 
 <ResetUploadDirConfirmDialog
@@ -1083,13 +1100,47 @@
 						</div>
 					</div>
 
-					<div class="  mb-2.5 flex w-full justify-between">
-						<div class=" self-center text-xs font-medium">{$i18n.t('OneDrive')}</div>
-						<div class="flex items-center relative">
-							<Switch bind:state={RAGConfig.ENABLE_ONEDRIVE_INTEGRATION} />
-						</div>
-					</div>
-				</div>
+                                        <div class="  mb-2.5 flex w-full justify-between">
+                                                <div class=" self-center text-xs font-medium">{$i18n.t('OneDrive')}</div>
+                                                <div class="flex items-center relative">
+                                                        <Switch bind:state={RAGConfig.ENABLE_ONEDRIVE_INTEGRATION} />
+                                                </div>
+                                        </div>
+
+                                        <div class="  mb-2.5 flex w-full justify-between">
+                                                <div class=" self-center text-xs font-medium">{$i18n.t('Azure Blob Endpoint')}</div>
+                                                <div class="flex items-center relative">
+                                                        <input
+                                                                class="flex-1 w-full text-sm bg-transparent outline-hidden"
+                                                                placeholder={$i18n.t('https://account.blob.core.windows.net')}
+                                                                bind:value={AzureStorageEndpoint}
+                                                                autocomplete="off"
+                                                        />
+                                                </div>
+                                        </div>
+
+                                        <div class="  mb-2.5 flex w-full justify-between">
+                                                <div class=" self-center text-xs font-medium">{$i18n.t('Azure Blob Container')}</div>
+                                                <div class="flex items-center relative">
+                                                        <input
+                                                                class="flex-1 w-full text-sm bg-transparent outline-hidden"
+                                                                bind:value={AzureStorageContainer}
+                                                                autocomplete="off"
+                                                        />
+                                                </div>
+                                        </div>
+
+                                        <div class="  mb-2.5 flex w-full justify-between">
+                                                <div class=" self-center text-xs font-medium">{$i18n.t('Azure Blob Key')}</div>
+                                                <div class="flex items-center relative">
+                                                        <SensitiveInput
+                                                                placeholder={$i18n.t('Shared Access Key')}
+                                                                bind:value={AzureStorageKey}
+                                                                required={false}
+                                                        />
+                                                </div>
+                                        </div>
+                                </div>
 
 				<div class="mb-3">
 					<div class=" mb-2.5 text-base font-medium">{$i18n.t('Danger Zone')}</div>

@@ -730,9 +730,21 @@ GOOGLE_APPLICATION_CREDENTIALS_JSON = os.environ.get(
     "GOOGLE_APPLICATION_CREDENTIALS_JSON", None
 )
 
-AZURE_STORAGE_ENDPOINT = os.environ.get("AZURE_STORAGE_ENDPOINT", None)
-AZURE_STORAGE_CONTAINER_NAME = os.environ.get("AZURE_STORAGE_CONTAINER_NAME", None)
-AZURE_STORAGE_KEY = os.environ.get("AZURE_STORAGE_KEY", None)
+AZURE_STORAGE_ENDPOINT = PersistentConfig(
+    "AZURE_STORAGE_ENDPOINT",
+    "storage.azure.endpoint",
+    os.environ.get("AZURE_STORAGE_ENDPOINT", ""),
+)
+AZURE_STORAGE_CONTAINER_NAME = PersistentConfig(
+    "AZURE_STORAGE_CONTAINER_NAME",
+    "storage.azure.container",
+    os.environ.get("AZURE_STORAGE_CONTAINER_NAME", ""),
+)
+AZURE_STORAGE_KEY = PersistentConfig(
+    "AZURE_STORAGE_KEY",
+    "storage.azure.key",
+    os.environ.get("AZURE_STORAGE_KEY", ""),
+)
 
 ####################################
 # File Upload DIR
