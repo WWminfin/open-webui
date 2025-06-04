@@ -71,6 +71,7 @@ from open_webui.routers import (
     configs,
     groups,
     files,
+    storage,
     functions,
     memories,
     models,
@@ -778,6 +779,10 @@ app.state.config.EXTERNAL_WEB_SEARCH_API_KEY = EXTERNAL_WEB_SEARCH_API_KEY
 app.state.config.EXTERNAL_WEB_LOADER_URL = EXTERNAL_WEB_LOADER_URL
 app.state.config.EXTERNAL_WEB_LOADER_API_KEY = EXTERNAL_WEB_LOADER_API_KEY
 
+app.state.config.AZURE_STORAGE_ENDPOINT = AZURE_STORAGE_ENDPOINT
+app.state.config.AZURE_STORAGE_CONTAINER_NAME = AZURE_STORAGE_CONTAINER_NAME
+app.state.config.AZURE_STORAGE_KEY = AZURE_STORAGE_KEY
+
 
 app.state.config.PLAYWRIGHT_WS_URL = PLAYWRIGHT_WS_URL
 app.state.config.PLAYWRIGHT_TIMEOUT = PLAYWRIGHT_TIMEOUT
@@ -1076,6 +1081,7 @@ app.include_router(images.router, prefix="/api/v1/images", tags=["images"])
 
 app.include_router(audio.router, prefix="/api/v1/audio", tags=["audio"])
 app.include_router(retrieval.router, prefix="/api/v1/retrieval", tags=["retrieval"])
+app.include_router(storage.router, prefix="/api/v1/storage", tags=["storage"])
 
 app.include_router(configs.router, prefix="/api/v1/configs", tags=["configs"])
 

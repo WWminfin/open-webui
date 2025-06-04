@@ -13,7 +13,7 @@
 	import RichTextInput from '../common/RichTextInput.svelte';
 	import VoiceRecording from '../chat/MessageInput/VoiceRecording.svelte';
 	import InputMenu from './MessageInput/InputMenu.svelte';
-	import { uploadFile } from '$lib/apis/files';
+       import { uploadFile, uploadLargeAudio } from '$lib/apis/files';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import FileItem from '../common/FileItem.svelte';
 	import Image from '../common/Image.svelte';
@@ -30,8 +30,9 @@
 	let content = '';
 	let files = [];
 
-	let filesInputElement;
-	let inputFiles;
+let filesInputElement;
+let largeAudioInputElement;
+let inputFiles;
 
 	export let typingUsers = [];
 
@@ -135,7 +136,7 @@
 		});
 	};
 
-	const uploadFileHandler = async (file) => {
+const uploadFileHandler = async (file, process = true) => {
 		const tempItemId = uuidv4();
 		const fileItem = {
 			type: 'file',
@@ -171,7 +172,12 @@
 				};
 			}
 
-			const uploadedFile = await uploadFile(localStorage.token, file, metadata);
+                        const uploadedFile = await uploadFile(
+                                localStorage.token,
+                                file,
+                                metadata,
+                                process
+                        );
 
 			if (uploadedFile) {
 				console.info('File upload completed:', {
@@ -198,9 +204,27 @@
 			}
 		} catch (e) {
 			toast.error(`${e}`);
-			files = files.filter((item) => item?.itemId !== tempItemId);
-		}
-	};
+        files = files.filter((item) => item?.itemId !== tempItemId);
+                }
+        };
+
+        const uploadLargeAudioFile = async (file) => {
+                if (file.size > 200 * 1024 * 1024) {
+                        toast.error(
+                                $i18n.t('File size should not exceed {{maxSize}} MB.', { maxSize: 200 })
+                        );
+                        return;
+                }
+
+                if (!file.type.startsWith('audio/')) {
+                        toast.error($i18n.t('Only audio files are allowed.'));
+                        return;
+                }
+
+               await uploadLargeAudio(localStorage.token, file);
+
+                dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
+        };
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		if (event.key === 'Escape') {
@@ -294,11 +318,11 @@
 <FilesOverlay show={draggedOver} />
 
 <input
-	bind:this={filesInputElement}
-	bind:files={inputFiles}
-	type="file"
-	hidden
-	multiple
+        bind:this={filesInputElement}
+        bind:files={inputFiles}
+        type="file"
+        hidden
+        multiple
 	on:change={async () => {
 		if (inputFiles && inputFiles.length > 0) {
 			inputFilesHandler(Array.from(inputFiles));
@@ -306,8 +330,24 @@
 			toast.error($i18n.t(`File not found.`));
 		}
 
-		filesInputElement.value = '';
-	}}
+        filesInputElement.value = '';
+        }}
+/>
+<input
+        bind:this={largeAudioInputElement}
+        type="file"
+        accept="audio/*"
+        hidden
+        on:change={async () => {
+                const file = largeAudioInputElement?.files?.[0];
+                if (file) {
+                        await uploadLargeAudioFile(file);
+                } else {
+                        toast.error($i18n.t(`File not found.`));
+                }
+
+                largeAudioInputElement.value = '';
+        }}
 />
 <div class="bg-transparent">
 	<div
@@ -500,12 +540,15 @@
 
 						<div class=" flex justify-between mb-2.5 mt-1.5 mx-0.5">
 							<div class="ml-1 self-end flex space-x-1">
-								<InputMenu
-									{screenCaptureHandler}
-									uploadFilesHandler={() => {
-										filesInputElement.click();
-									}}
-								>
+                                                                <InputMenu
+                                                                        {screenCaptureHandler}
+                                                                        uploadFilesHandler={() => {
+                                                                                filesInputElement.click();
+                                                                        }}
+                                                                        uploadLargeAudioHandler={() => {
+                                                                                largeAudioInputElement.click();
+                                                                        }}
+                                                                >
 									<button
 										class="bg-transparent hover:bg-white/80 text-gray-800 dark:text-white dark:hover:bg-gray-800 transition rounded-full p-1.5 outline-hidden focus:outline-hidden"
 										type="button"

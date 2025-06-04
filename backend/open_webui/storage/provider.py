@@ -288,9 +288,9 @@ class GCSStorageProvider(StorageProvider):
 
 class AzureStorageProvider(StorageProvider):
     def __init__(self):
-        self.endpoint = AZURE_STORAGE_ENDPOINT
-        self.container_name = AZURE_STORAGE_CONTAINER_NAME
-        storage_key = AZURE_STORAGE_KEY
+        self.endpoint = str(AZURE_STORAGE_ENDPOINT)
+        self.container_name = str(AZURE_STORAGE_CONTAINER_NAME)
+        storage_key = str(AZURE_STORAGE_KEY)
 
         if storage_key:
             # Configure using the Azure Storage Account Endpoint and Key

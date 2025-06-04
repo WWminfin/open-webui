@@ -8,18 +8,20 @@
 
 	import Dropdown from '$lib/components/common/Dropdown.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
-	import DocumentArrowUpSolid from '$lib/components/icons/DocumentArrowUpSolid.svelte';
-	import Switch from '$lib/components/common/Switch.svelte';
-	import GlobeAltSolid from '$lib/components/icons/GlobeAltSolid.svelte';
-	import WrenchSolid from '$lib/components/icons/WrenchSolid.svelte';
-	import CameraSolid from '$lib/components/icons/CameraSolid.svelte';
+import DocumentArrowUpSolid from '$lib/components/icons/DocumentArrowUpSolid.svelte';
+import Switch from '$lib/components/common/Switch.svelte';
+import GlobeAltSolid from '$lib/components/icons/GlobeAltSolid.svelte';
+import WrenchSolid from '$lib/components/icons/WrenchSolid.svelte';
+import CameraSolid from '$lib/components/icons/CameraSolid.svelte';
+import CloudArrowUp from '$lib/components/icons/CloudArrowUp.svelte';
 
 	const i18n = getContext('i18n');
 
-	export let screenCaptureHandler: Function;
-	export let uploadFilesHandler: Function;
+export let screenCaptureHandler: Function;
+export let uploadFilesHandler: Function;
+export let uploadLargeAudioHandler: Function;
 
-	export let onClose: Function = () => {};
+export let onClose: Function = () => {};
 
 	let show = false;
 
@@ -63,15 +65,25 @@
 				</DropdownMenu.Item>
 			{/if}
 
-			<DropdownMenu.Item
-				class="flex gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
-				on:click={() => {
-					uploadFilesHandler();
-				}}
-			>
-				<DocumentArrowUpSolid />
-				<div class="line-clamp-1">{$i18n.t('Upload Files')}</div>
-			</DropdownMenu.Item>
-		</DropdownMenu.Content>
-	</div>
+                        <DropdownMenu.Item
+                                class="flex gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
+                                on:click={() => {
+                                        uploadFilesHandler();
+                                }}
+                        >
+                                <DocumentArrowUpSolid />
+                                <div class="line-clamp-1">{$i18n.t('Upload Files')}</div>
+                        </DropdownMenu.Item>
+
+                        <DropdownMenu.Item
+                                class="flex gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
+                                on:click={() => {
+                                        uploadLargeAudioHandler();
+                                }}
+                        >
+                                <CloudArrowUp />
+                                <div class="line-clamp-1">{$i18n.t('Large Audio File')}</div>
+                        </DropdownMenu.Item>
+                </DropdownMenu.Content>
+        </div>
 </Dropdown>

@@ -1,6 +1,11 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
 
-export const uploadFile = async (token: string, file: File, metadata?: object | null) => {
+export const uploadFile = async (
+        token: string,
+        file: File,
+        metadata?: object | null,
+        process = true
+) => {
 	const data = new FormData();
 	data.append('file', file);
 	if (metadata) {
@@ -9,7 +14,7 @@ export const uploadFile = async (token: string, file: File, metadata?: object | 
 
 	let error = null;
 
-	const res = await fetch(`${WEBUI_API_BASE_URL}/files/`, {
+        const res = await fetch(`${WEBUI_API_BASE_URL}/files/?process=${process}`, {
 		method: 'POST',
 		headers: {
 			Accept: 'application/json',
@@ -243,5 +248,35 @@ export const deleteAllFiles = async (token: string) => {
 		throw error;
 	}
 
-	return res;
+        return res;
+};
+
+export const uploadLargeAudio = async (token: string, file: File) => {
+        const data = new FormData();
+        data.append('file', file);
+
+        let error = null;
+
+        const res = await fetch(`${WEBUI_API_BASE_URL}/storage/azure/upload`, {
+                method: 'POST',
+                headers: {
+                        authorization: `Bearer ${token}`
+                },
+                body: data
+        })
+                .then(async (res) => {
+                        if (!res.ok) throw await res.json();
+                        return res.json();
+                })
+                .catch((err) => {
+                        console.error(err);
+                        error = err.detail;
+                        return null;
+                });
+
+        if (error) {
+                throw error;
+        }
+
+        return res;
 };

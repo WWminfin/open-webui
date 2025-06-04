@@ -27,7 +27,7 @@
 		createMessagesList,
 		extractCurlyBraceWords
 	} from '$lib/utils';
-	import { uploadFile } from '$lib/apis/files';
+       import { uploadFile, uploadLargeAudio } from '$lib/apis/files';
 	import { generateAutoCompletion } from '$lib/apis';
 	import { deleteFileById } from '$lib/apis/files';
 
@@ -105,8 +105,9 @@
 	let chatInputContainerElement;
 	let chatInputElement;
 
-	let filesInputElement;
-	let commandsElement;
+        let filesInputElement;
+        let largeAudioInputElement;
+        let commandsElement;
 
 	let inputFiles;
 
@@ -221,26 +222,30 @@
 		}
 	};
 
-	const uploadFileHandler = async (file, fullContext: boolean = false) => {
-		if ($_user?.role !== 'admin' && !($_user?.permissions?.chat?.file_upload ?? true)) {
-			toast.error($i18n.t('You do not have permission to upload files.'));
-			return null;
-		}
+const uploadFileHandler = async (
+        file,
+        fullContext: boolean = false,
+        process = true
+) => {
+        if ($_user?.role !== 'admin' && !($_user?.permissions?.chat?.file_upload ?? true)) {
+                toast.error($i18n.t('You do not have permission to upload files.'));
+                return null;
+        }
 
-		const tempItemId = uuidv4();
-		const fileItem = {
-			type: 'file',
-			file: '',
-			id: null,
-			url: '',
-			name: file.name,
-			collection_name: '',
-			status: 'uploading',
-			size: file.size,
-			error: '',
-			itemId: tempItemId,
-			...(fullContext ? { context: 'full' } : {})
-		};
+        const tempItemId = uuidv4();
+        const fileItem = {
+                type: 'file',
+                file: '',
+                id: null,
+                url: '',
+                name: file.name,
+                collection_name: '',
+                status: 'uploading',
+                size: file.size,
+                error: '',
+                itemId: tempItemId,
+                ...(fullContext ? { context: 'full' } : {})
+        };
 
 		if (fileItem.size == 0) {
 			toast.error($i18n.t('You cannot upload an empty file.'));
@@ -262,7 +267,12 @@
 			}
 
 			// During the file upload, file content is automatically extracted.
-			const uploadedFile = await uploadFile(localStorage.token, file, metadata);
+                        const uploadedFile = await uploadFile(
+                                localStorage.token,
+                                file,
+                                metadata,
+                                process
+                        );
 
 			if (uploadedFile) {
 				console.log('File upload completed:', {
@@ -289,11 +299,27 @@
 			}
 		} catch (e) {
 			toast.error(`${e}`);
-			files = files.filter((item) => item?.itemId !== tempItemId);
-		}
-	};
+        files = files.filter((item) => item?.itemId !== tempItemId);
+                }
+        };
 
-	const inputFilesHandler = async (inputFiles) => {
+const uploadLargeAudioFile = async (file) => {
+        if (file.size > 200 * 1024 * 1024) {
+                toast.error($i18n.t('File size should not exceed {{maxSize}} MB.', { maxSize: 200 }));
+                return;
+        }
+
+        if (!file.type.startsWith('audio/')) {
+                toast.error($i18n.t('Only audio files are allowed.'));
+                return;
+        }
+
+       await uploadLargeAudio(localStorage.token, file);
+
+        dispatch('systemMessage', $i18n.t('Audio file has been sent and is being processed.'));
+};
+
+        const inputFilesHandler = async (inputFiles) => {
 		console.log('Input files handler called with:', inputFiles);
 		inputFiles.forEach((file) => {
 			console.log('Processing file:', {
@@ -552,12 +578,12 @@
 					: 'max-w-6xl'} px-2.5 mx-auto inset-x-0"
 			>
 				<div class="">
-					<input
-						bind:this={filesInputElement}
-						bind:files={inputFiles}
-						type="file"
-						hidden
-						multiple
+                                        <input
+                                                bind:this={filesInputElement}
+                                                bind:files={inputFiles}
+                                                type="file"
+                                                hidden
+                                                multiple
 						on:change={async () => {
 							if (inputFiles && inputFiles.length > 0) {
 								const _inputFiles = Array.from(inputFiles);
@@ -566,9 +592,25 @@
 								toast.error($i18n.t(`File not found.`));
 							}
 
-							filesInputElement.value = '';
-						}}
-					/>
+                                                        filesInputElement.value = '';
+                                                }}
+                                        />
+                                        <input
+                                                bind:this={largeAudioInputElement}
+                                                type="file"
+                                                accept="audio/*"
+                                                hidden
+                                                on:change={async () => {
+                                                        const file = largeAudioInputElement?.files?.[0];
+                                                        if (file) {
+                                                                await uploadLargeAudioFile(file);
+                                                        } else {
+                                                                toast.error($i18n.t(`File not found.`));
+                                                        }
+
+                                                        largeAudioInputElement.value = '';
+                                                }}
+                                        />
 
 					{#if recording}
 						<VoiceRecording
@@ -1158,11 +1200,14 @@
 											selectedModels={atSelectedModel ? [atSelectedModel.id] : selectedModels}
 											{fileUploadCapableModels}
 											{screenCaptureHandler}
-											{inputFilesHandler}
-											uploadFilesHandler={() => {
-												filesInputElement.click();
-											}}
-											uploadGoogleDriveHandler={async () => {
+                                       {inputFilesHandler}
+                                       uploadFilesHandler={() => {
+                                                filesInputElement.click();
+                                       }}
+                                       uploadLargeAudioHandler={() => {
+                                                largeAudioInputElement.click();
+                                       }}
+                                       uploadGoogleDriveHandler={async () => {
 												try {
 													const fileData = await createPicker();
 													if (fileData) {

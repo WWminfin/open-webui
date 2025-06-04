@@ -2,6 +2,7 @@ import hashlib
 import json
 import logging
 import os
+import shutil
 import uuid
 from functools import lru_cache
 from pathlib import Path
@@ -76,6 +77,15 @@ from pydub import AudioSegment
 from pydub.utils import mediainfo
 
 
+def ensure_ffmpeg():
+    """Raise HTTPException if ffmpeg is missing."""
+    if not shutil.which("ffmpeg"):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="FFmpeg not found. Please install FFmpeg and ensure it is available in your PATH.",
+        )
+
+
 def is_audio_conversion_required(file_path):
     """
     Check if the given audio file needs conversion to mp3.
@@ -108,6 +118,7 @@ def is_audio_conversion_required(file_path):
 
 def convert_audio_to_mp3(file_path):
     """Convert audio file to mp3 format."""
+    ensure_ffmpeg()
     try:
         output_path = os.path.splitext(file_path)[0] + ".mp3"
         audio = AudioSegment.from_file(file_path)
@@ -116,7 +127,10 @@ def convert_audio_to_mp3(file_path):
         return output_path
     except Exception as e:
         log.error(f"Error converting audio file: {e}")
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
 
 
 def set_faster_whisper_model(model: str, auto_update: bool = False):
@@ -796,6 +810,8 @@ def transcribe(request: Request, file_path: str, metadata: Optional[dict] = None
         file_path = compress_audio(file_path)
     except Exception as e:
         log.exception(e)
+        if isinstance(e, HTTPException):
+            raise e
 
     # Always produce a list of chunk paths (could be one entry if small)
     try:
@@ -840,6 +856,7 @@ def transcribe(request: Request, file_path: str, metadata: Optional[dict] = None
 
 
 def compress_audio(file_path):
+    ensure_ffmpeg()
     if os.path.getsize(file_path) > MAX_FILE_SIZE:
         id = os.path.splitext(os.path.basename(file_path))[
             0
@@ -859,6 +876,7 @@ def compress_audio(file_path):
 
 
 def split_audio(file_path, max_bytes, format="mp3", bitrate="32k"):
+    ensure_ffmpeg()
     """
     Splits audio into chunks not exceeding max_bytes.
     Returns a list of chunk file paths. If audio fits, returns list with original path.
